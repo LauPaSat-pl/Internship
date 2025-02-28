@@ -1,0 +1,59 @@
+name: interproscan
+
+on:
+  workflow_dispatch: # manual run
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          remove-dotnet: 'true'
+          remove-haskell: 'true'
+          remove-codeql: 'true'
+          remove-docker-images: 'true'
+
+      - name: checkout repo content
+        uses: actions/checkout@v4 # checkout the repository content
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3 python3-pip wget
+          pip3 install scipy
+
+      - name: save cwd path
+        id: cwd
+        run: echo "::set-output name=cwd::$(pwd)"
+
+      - name: install interproscan
+        run: |
+          echo $name
+          mkdir interproscan
+          cd interproscan
+          wget https://ftp.ebi.ac.uk/pub/software/unix/iprscan/5/5.68-100.0/interproscan-5.68-100.0-64-bit.tar.gz
+          wget https://ftp.ebi.ac.uk/pub/software/unix/iprscan/5/5.68-100.0/interproscan-5.68-100.0-64-bit.tar.gz.md5
+          tar -pxvzf interproscan-5.68-100.0-*-bit.tar.gz
+          cd interproscan-5.68-100.0
+          python3 setup.py -f interproscan.properties 
+          cd ..
+
+
+      - name: run interproscan
+        run: |
+          cd pep
+          mkdir results 
+          for k in *.pep; do filename=$(basename "$k"); ../interproscan/interproscan-5.68-100.0/interproscan.sh -appl Pfam -goterms -i "$k" -dp -f tsv -b results/"$filename".interpro; done
+
+      - name: upload results
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Interproscan results
+          branch: ${{ github.head_ref }}
