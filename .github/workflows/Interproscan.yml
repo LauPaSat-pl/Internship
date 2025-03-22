@@ -57,8 +57,8 @@ jobs:
         run: |
           rm -rf interproscan
 
-      - name: upload results
+      - name: upload interproscan_results
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: Interproscan results
+          commit_message: Interproscan interproscan_results
           branch: ${{ github.head_ref }}

@@ -1,0 +1,36 @@
+name: PCC
+
+on:
+  workflow_dispatch: # manual run
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1500
+    permissions:
+      contents: write
+
+    steps:
+
+      - name: checkout repo content
+        uses: actions/checkout@v4 # checkout the repository content
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3 python3-pip wget
+          pip3 install scipy
+
+
+      - name: run PCC
+        run: |
+          ulimit -n 4096
+          python3 Scripts for processing/02_PCC.py -f Scripts for processing/
+
+      - name: upload interproscan_results
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: OrthoFinder interproscan_results
+
