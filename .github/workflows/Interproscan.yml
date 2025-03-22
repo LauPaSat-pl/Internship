@@ -51,6 +51,11 @@ jobs:
           cd pep
           mkdir results 
           for k in *.pep; do filename=$(basename "$k"); ../interproscan/interproscan-5.68-100.0/interproscan.sh -appl Pfam -goterms -i "$k" -dp -f tsv -b results/"$filename".interpro; done
+          cd ..
+
+      - name: remove interproscan
+        run: |
+          rm -rf interproscan
 
       - name: upload results
         uses: stefanzweifel/git-auto-commit-action@v5
